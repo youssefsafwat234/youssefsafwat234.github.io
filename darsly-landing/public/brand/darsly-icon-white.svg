@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 16 356 346" width="356" height="346">
+<defs><linearGradient id="gEt" gradientUnits="userSpaceOnUse" x1="-9.6" y1="131.6" x2="130.2" y2="29.3"><stop offset="0.00" stop-color="#245ee2"/><stop offset="0.25" stop-color="#126def"/><stop offset="0.50" stop-color="#0080f6"/><stop offset="0.75" stop-color="#0195f8"/><stop offset="1.00" stop-color="#02a8f6"/></linearGradient>
+<linearGradient id="gEb" gradientUnits="userSpaceOnUse" x1="22.8" y1="347.5" x2="88.0" y2="288.4"><stop offset="0.00" stop-color="#3a30b2"/><stop offset="0.25" stop-color="#3b36bc"/><stop offset="0.50" stop-color="#393fc5"/><stop offset="0.75" stop-color="#3849ce"/><stop offset="1.00" stop-color="#3452d2"/></linearGradient>
+<linearGradient id="gAr" gradientUnits="userSpaceOnUse" x1="146.7" y1="238.8" x2="251.3" y2="147.6"><stop offset="0.00" stop-color="#4359d1"/><stop offset="0.25" stop-color="#166af0"/><stop offset="0.50" stop-color="#0184f6"/><stop offset="0.75" stop-color="#019af7"/><stop offset="1.00" stop-color="#06aaf3"/></linearGradient>
+<linearGradient id="gAl" gradientUnits="userSpaceOnUse" x1="86.5" y1="176.0" x2="232.3" y2="142.8"><stop offset="0.00" stop-color="#2055d7"/><stop offset="0.25" stop-color="#0a77f4"/><stop offset="0.50" stop-color="#018ef4"/><stop offset="0.75" stop-color="#01a4f7"/><stop offset="1.00" stop-color="#03a9f1"/></linearGradient>
+<clipPath id="fr"><polygon points="462.43,-131.60 -54.55,423.84 400,420 400,0"/></clipPath>
+<clipPath id="fl"><polygon points="462.43,-131.60 -54.55,423.84 0,420 0,0"/></clipPath></defs>
+<path fill="url(#gEt)" d="M13.87,23.83L142.24,23.83L142.24,70.13L61.80,70.13L61.80,166.52L13.87,188.54Z"/>
+<path fill="url(#gEb)" d="M13.87,268.14Q37.78,259.07 61.68,251.76L61.68,307.75L118.85,307.75L125.48,354.01L13.87,354.01Z"/>
+<path fill="url(#gAl)" clip-path="url(#fl)" d="M240.87,106.44L71.33,182.83L110,206L158,262L170,300L181.72,300.08Z"/>
+<path fill="url(#gAr)" clip-path="url(#fr)" d="M240.87,106.44L71.33,182.83L110,206L158,262L170,300L181.72,300.08Z"/>
+<path fill="#FFFFFF" d="M161.94,23.83H193.68A161.69,165.09 0 0 1 193.68,354.01L142.96,354.01L127.02,225.91Q70.45,226.31 13.87,247.69L13.87,208.71L70.75,183.09L167.01,185.79L182.61,307.05L189.84,306.55A116.66,118.21 0 0 0 189.84,70.13L161.94,70.13Z"/>
+</svg>

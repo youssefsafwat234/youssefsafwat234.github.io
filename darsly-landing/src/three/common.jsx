@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Environment, Lightformer } from '@react-three/drei';
+import { Environment, Lightformer, AdaptiveDpr } from '@react-three/drei';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -9,7 +9,7 @@ export const C = {
 };
 
 /** Canvas that only renders while on screen (saves GPU on a long page). */
-export function View3D({ children, camera = { position: [0, 0, 6], fov: 35 }, className = '', style, dpr = [1, 1.75] }) {
+export function View3D({ children, camera = { position: [0, 0, 6], fov: 35 }, className = '', style, dpr = [1, 1.5] }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -21,12 +21,14 @@ export function View3D({ children, camera = { position: [0, 0, 6], fov: 35 }, cl
     <div ref={ref} className={`view3d ${className}`} style={style}>
       <Canvas
         frameloop={visible ? 'always' : 'never'}
+        performance={{ min: 0.6 }}
         dpr={dpr}
         camera={camera}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.outputColorSpace = THREE.SRGBColorSpace; }}
       >
         <Suspense fallback={null}>{children}</Suspense>
+        <AdaptiveDpr pixelated={false} />
       </Canvas>
     </div>
   );
@@ -39,7 +41,7 @@ export function Studio({ intensity = 1 }) {
       <ambientLight intensity={0.35 * intensity} />
       <directionalLight position={[4, 6, 5]} intensity={1.6 * intensity} />
       <directionalLight position={[-5, -2, 3]} intensity={0.6 * intensity} color={C.sky} />
-      <Environment resolution={256} frames={1}>
+      <Environment resolution={128} frames={1}>
         <group rotation={[-Math.PI / 3, 0, 0]}>
           <Lightformer form="rect" intensity={4} position={[0, 5, -9]} scale={[10, 10, 1]} />
           <Lightformer form="rect" intensity={2} color={C.cobaltHi} position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[20, 0.6, 1]} />

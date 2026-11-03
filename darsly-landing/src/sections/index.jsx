@@ -1,13 +1,11 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 
-import Aurora from '../components/reactbits/Aurora.jsx';
 import SplitText from '../components/reactbits/SplitText.jsx';
 import BlurText from '../components/reactbits/BlurText.jsx';
 import RotatingText from '../components/reactbits/RotatingText.jsx';
-import ShinyText from '../components/reactbits/ShinyText.jsx';
 import DecryptedText from '../components/reactbits/DecryptedText.jsx';
 import ScrollReveal from '../components/reactbits/ScrollReveal.jsx';
 import GradientText from '../components/reactbits/GradientText.jsx';
@@ -18,13 +16,27 @@ import CountUp from '../components/reactbits/CountUp.jsx';
 import AnimatedContent from '../components/reactbits/AnimatedContent.jsx';
 import { LogoLoop } from '../components/reactbits/LogoLoop.jsx';
 
-import { View3D } from '../three/common.jsx';
-import { HeroScene, JourneyScene, LockScene, FinaleScene } from '../three/scenes.jsx';
 import { NAV, HERO, MARQUEE, AUDIENCE, JOURNEY, PROTECTION, OFFLINE, TOOLKIT, FACTS, BILLING, FAQ } from '../data/content.js';
+import { screen, brand, GALLERY } from '../data/screens.js';
 import { Icon } from './icons.jsx';
 
+const Scene3D = lazy(() => import('../three/Scene3D.jsx'));
 gsap.registerPlugin(ScrollTrigger);
+
 const go = (id) => (e) => { e.preventDefault(); const el = document.getElementById(id); if (!el) return; window.__lenis ? window.__lenis.scrollTo(el, { offset: -70 }) : el.scrollIntoView({ behavior: 'smooth' }); };
+
+function Lazy3D({ className, ...p }) {
+  return <Suspense fallback={<div className={`view3d ${className} loading3d`} />}><Scene3D className={className} {...p} /></Suspense>;
+}
+
+/** A phone bezel around a real app screen image. */
+export function Shot({ code, alt = '', className = '', eager = false }) {
+  return (
+    <figure className={`shot ${className}`}>
+      <img src={screen(code)} alt={alt} width="600" height="1298" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    </figure>
+  );
+}
 
 /** progress ref (0..1) of a section scrolling through the viewport */
 function useScrollProgress(ref, opts = {}) {
@@ -37,8 +49,7 @@ function useScrollProgress(ref, opts = {}) {
 
 const Logo = () => (
   <a href="#top" className="logo" onClick={go('top')} aria-label="درسلي">
-    <span className="logo-mark"><Icon name="cap" size={20} /></span>
-    <span className="logo-word">Darsly</span>
+    <img src={brand('darsly-logo-white')} alt="درسلي Darsly" width="138" height="38" />
   </a>
 );
 
@@ -63,27 +74,26 @@ export function Hero() {
   const progress = useRef(0);
   useGSAP(() => {
     ScrollTrigger.create({ trigger: ref.current, start: 'top top', end: 'bottom top', scrub: true, onUpdate: (s) => { progress.current = s.progress; } });
-    gsap.to('.hero-copy', { yPercent: -18, opacity: 0.2, ease: 'none', scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: true } });
+    gsap.to('.hero-copy', { yPercent: -14, opacity: 0.25, ease: 'none', scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: true } });
   }, { scope: ref });
   return (
     <section id="top" ref={ref} className="hero dark">
-      <div className="hero-bg"><Aurora colorStops={['#1F4FD8', '#7FA6FF', '#13234A']} amplitude={1.1} blend={0.6} speed={0.6} /></div>
-      <div className="grain" />
+      <div className="hero-bg" aria-hidden="true"><i className="g1" /><i className="g2" /><i className="g3" /><div className="hero-grid-lines" /></div>
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <span className="kicker"><span className="dot" />{HERO.kicker}</span>
           <h1 className="hero-title">
-            <SplitText text={HERO.title} tag="span" splitType="words" delay={90} duration={1.1} textAlign="right" className="t1" />
-            <SplitText text={HERO.title2} tag="span" splitType="words" delay={90} duration={1.1} textAlign="right" className="t2" />
+            <SplitText text={HERO.title} tag="span" splitType="words" delay={70} duration={0.9} textAlign="right" className="t1" />
+            <span className="t2">{HERO.title2}</span>
           </h1>
           <div className="hero-rot">
             <span>تطبيق واحد</span>
-            <RotatingText texts={HERO.rotating} splitBy="words" mainClassName="rot-pill" rotationInterval={2200} staggerDuration={0} />
+            <RotatingText texts={HERO.rotating} splitBy="words" mainClassName="rot-pill" rotationInterval={2200} />
           </div>
-          <BlurText text={HERO.sub} animateBy="words" delay={35} className="hero-sub" direction="bottom" />
+          <BlurText text={HERO.sub} animateBy="words" delay={25} className="hero-sub" direction="bottom" />
           <div className="hero-ctas" id="start">
             <Magnet padding={60} magnetStrength={3}><a className="btn btn-primary" href="#audience" onClick={go('audience')}>{HERO.primary}<Icon name="arrow" size={18} /></a></Magnet>
-            <Magnet padding={60} magnetStrength={4}><a className="btn btn-ghost" href="#offline" onClick={go('offline')}><Icon name="download" size={18} />{HERO.secondary}</a></Magnet>
+            <Magnet padding={60} magnetStrength={4}><a className="btn btn-ghost" href="#screens" onClick={go('screens')}><Icon name="download" size={18} />{HERO.secondary}</a></Magnet>
           </div>
           <div className="hero-badges">
             <span><Icon name="shield" size={16} />فيديو محمي باسم الطالب</span>
@@ -91,7 +101,7 @@ export function Hero() {
             <span><Icon name="moon" size={16} />دارك مود</span>
           </div>
         </div>
-        <View3D className="hero-3d" camera={{ position: [0, 0, 7.2], fov: 35 }}><HeroScene progress={progress} /></View3D>
+        <Lazy3D name="hero" className="hero-3d" progress={progress} camera={{ position: [0, 0, 7.4], fov: 35 }} />
       </div>
       <a className="scroll-cue" href="#audience" onClick={go('audience')} aria-label="انزل"><span /></a>
     </section>
@@ -103,7 +113,7 @@ export function Marquee() {
   const logos = MARQUEE.map((t, i) => ({ node: <span className={`mq-chip c${i % 4}`}>{t}</span>, title: t }));
   return (
     <section className="marquee dark" aria-label="خصائص درسلي">
-      <div dir="ltr"><LogoLoop logos={logos} speed={60} direction="right" logoHeight={40} gap={14} pauseOnHover fadeOut fadeOutWidth={0.08} intro={false} ariaLabel="خصائص درسلي" /></div>
+      <div dir="ltr"><LogoLoop logos={logos} speed={50} direction="right" logoHeight={40} gap={14} pauseOnHover fadeOut fadeOutWidth={0.08} intro={false} ariaLabel="خصائص درسلي" /></div>
     </section>
   );
 }
@@ -111,17 +121,19 @@ export function Marquee() {
 /* ---------------- AUDIENCE ---------------- */
 export function Audience() {
   const icons = { teacher: 'board', secretary: 'users', student: 'cap' };
+  const shots = { teacher: 'L47.3', secretary: 'L45.1', student: 'ST1.4' };
   return (
     <section id="audience" className="section light">
       <div className="wrap">
         <Heading kicker="لمين؟" title="تلات أدوار، تطبيق واحد" sub="كل واحد بيشوف اللي يخصّه بس، وكل حاجة متسجّلة باسم اللي عملها." />
         <div className="aud-grid">
           {AUDIENCE.map((a, i) => (
-            <AnimatedContent key={a.key} distance={60} delay={i * 0.12} duration={0.9}>
-              <SpotlightCard className="aud-card" theme="light" spotlightColor="rgba(31,79,216,0.18)">
+            <AnimatedContent key={a.key} distance={50} delay={i * 0.1} duration={0.8}>
+              <SpotlightCard className="aud-card" theme="light" spotlightColor="rgba(31,79,216,0.16)">
                 <div className="aud-top"><span className={`aud-ico ${a.key}`}><Icon name={icons[a.key]} size={26} /></span><span className="aud-tag">{a.tag}</span></div>
                 <h3>{a.title}</h3>
                 <ul>{a.points.map((p) => <li key={p}><Icon name="check" size={16} />{p}</li>)}</ul>
+                <div className="aud-peek"><Shot code={shots[a.key]} alt={a.title} /></div>
               </SpotlightCard>
             </AnimatedContent>
           ))}
@@ -131,61 +143,91 @@ export function Audience() {
   );
 }
 
-/* ---------------- JOURNEY (pinned 3D pipeline) ---------------- */
+/* ---------------- SCREENS gallery (real app screens) ---------------- */
+export function Screens() {
+  const [tab, setTab] = useState('student');
+  const rail = useRef(null);
+  const tabs = [['student', 'تطبيق الطالب'], ['teacher', 'المحاضر والسكرتير'], ['admin', 'الأدمن']];
+  const scroll = (dir) => rail.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
+  useEffect(() => { rail.current?.scrollTo({ left: 0 }); }, [tab]);
+  return (
+    <section id="screens" className="section dark screens">
+      <div className="wrap">
+        <Heading kicker="جوه التطبيق" title="ده شكل درسلي بجد" sub="شاشات حقيقية من التطبيق — من غير تزويق." dark />
+        <div className="scr-bar">
+          <div className="scr-tabs" role="tablist">{tabs.map(([k, t]) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t}</button>)}</div>
+          <div className="scr-arrows"><button aria-label="السابق" onClick={() => scroll(1)}><Icon name="arrow" size={18} /></button><button aria-label="التالي" onClick={() => scroll(-1)} className="flip"><Icon name="arrow" size={18} /></button></div>
+        </div>
+      </div>
+      <div className="scr-rail" ref={rail} key={tab}>
+        {GALLERY[tab].map(([c, t], i) => (
+          <div key={c} className="scr-item" style={{ '--d': `${i * 50}ms` }}>
+            <Shot code={c} alt={t} />
+            <span className="scr-cap"><b dir="ltr">{c}</b>{t}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- JOURNEY (pinned, 3D pipeline behind real screens) ---------------- */
+const JOURNEY_SHOTS = ['L47.1', 'L47.2', 'L47.4', 'ST6.1'];
 export function Journey() {
   const ref = useRef(null);
   const progress = useRef(0);
   const [step, setStep] = useState(0);
   useGSAP(() => {
     const mm = gsap.matchMedia();
-    mm.add('(min-width: 900px)', () => {
-      ScrollTrigger.create({ trigger: ref.current, start: 'top top', end: '+=2400', pin: true, scrub: 0.6,
-        onUpdate: (s) => { progress.current = s.progress; setStep(Math.min(3, Math.floor(s.progress * 4))); } });
-    });
-    mm.add('(max-width: 899px)', () => {
-      ScrollTrigger.create({ trigger: ref.current, start: 'top center', end: 'bottom center', scrub: true,
-        onUpdate: (s) => { progress.current = s.progress; setStep(Math.min(3, Math.floor(s.progress * 3.999))); } });
-    });
+    const upd = (s) => { progress.current = s.progress; const n = Math.min(3, Math.floor(s.progress * 4)); setStep((o) => (o === n ? o : n)); };
+    mm.add('(min-width: 900px)', () => { ScrollTrigger.create({ trigger: ref.current, start: 'top top', end: '+=2000', pin: true, scrub: 0.5, onUpdate: upd }); });
+    mm.add('(max-width: 899px)', () => { ScrollTrigger.create({ trigger: ref.current, start: 'top center', end: 'bottom center', scrub: true, onUpdate: upd }); });
   }, { scope: ref });
   return (
     <section id="journey" ref={ref} className="journey dark">
-      <div className="wrap">
-        <Heading kicker="رحلة المحاضرة" title="من لينك… لمحاضرة منشورة" sub="المحاضرة مش بتتنشر غير لما الفيديو يجهز فعلاً. الطابور شغّال، وإنت بيوصلك إشعار." dark />
-      </div>
-      <View3D className="journey-3d" camera={{ position: [1.6, 0.4, 7], fov: 38 }}><JourneyScene progress={progress} /></View3D>
-      <div className="wrap journey-steps">
-        {JOURNEY.map((j, i) => (
-          <div key={j.n} className={`jstep ${i === step ? 'on' : ''} ${i < step ? 'done' : ''}`}>
-            <span className="jn">{j.n}</span>
-            <h3>{j.title}</h3>
-            <p>{j.body}</p>
+      <Lazy3D name="journey" className="journey-3d" progress={progress} camera={{ position: [1.6, 0.4, 7], fov: 38 }} />
+      <div className="wrap journey-grid">
+        <div>
+          <Heading kicker="رحلة المحاضرة" title="من لينك… لمحاضرة منشورة" sub="المحاضرة مش بتتنشر غير لما الفيديو يجهز فعلاً. المعالجة شغّالة في الطابور، وإنت بيوصلك إشعار." dark />
+          <div className="journey-steps">
+            {JOURNEY.map((j, i) => (
+              <div key={j.n} className={`jstep ${i === step ? 'on' : ''} ${i < step ? 'done' : ''}`}>
+                <span className="jn">{j.n}</span>
+                <div><h3>{j.title}</h3><p>{j.body}</p></div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <div className="journey-phone">
+          {JOURNEY_SHOTS.map((c, i) => <Shot key={c} code={c} className={i === step ? 'on' : ''} alt={JOURNEY[i].title} />)}
+        </div>
       </div>
-      <div className="wrap journey-bar"><span style={{ transform: `scaleX(${(step + 1) / 4})` }} /></div>
     </section>
   );
 }
 
-/* ---------------- PROTECTION bento ---------------- */
+/* ---------------- PROTECTION bento (with real screens) ---------------- */
+const PROT_SHOTS = { players: 'ST6.17', capture: 'ST6.11', quality: 'ST6.3', headphones: 'ST6.10', chapters: 'ST6.1', gates: 'ST5.1' };
 export function Protection() {
   const icons = { watermark: 'drop', views: 'eye', capture: 'camoff', headphones: 'headphones', players: 'layers', quality: 'hd', chapters: 'list', gates: 'lock' };
   return (
     <section id="protection" className="section light">
       <div className="wrap">
         <Heading kicker="حماية الفيديو" title="محتواك بتاعك — ومش هيطلع برّه" />
-        <ScrollReveal baseOpacity={0.12} enableBlur blurStrength={5} baseRotation={1} containerClassName="reveal" textClassName="reveal-text">
+        <ScrollReveal baseOpacity={0.15} enableBlur={false} baseRotation={0} containerClassName="reveal" textClassName="reveal-text">
           الطالب بيشوف الفيديو في مشغّل درسلي بس. مفيش يوتيوب ولا درايف ولا لينك يتنسخ. اسمه على الشاشة، والسكرين شوت مقفول، وإنت محدد كام مرة يتفرج.
         </ScrollReveal>
         <div className="bento">
           {PROTECTION.map((f, i) => (
-            <AnimatedContent key={f.k} distance={40} delay={(i % 4) * 0.08} className={f.big ? 'b-big' : ''}>
-              <SpotlightCard className={`bento-card ${f.k}`} theme="light" spotlightColor="rgba(31,79,216,0.16)">
-                <span className="b-ico"><Icon name={icons[f.k]} size={24} /></span>
-                <h3>{f.title}</h3>
-                <p>{f.body}</p>
-                {f.k === 'players' && <PlayersViz />}
-                {f.k === 'watermark' && <WatermarkViz />}
+            <AnimatedContent key={f.k} distance={30} delay={(i % 4) * 0.06} className={f.big ? 'b-big' : ''}>
+              <SpotlightCard className={`bento-card ${f.k} ${PROT_SHOTS[f.k] ? 'has-shot' : ''}`} theme="light" spotlightColor="rgba(31,79,216,0.14)">
+                <div className="b-txt">
+                  <span className="b-ico"><Icon name={icons[f.k]} size={24} /></span>
+                  <h3>{f.title}</h3>
+                  <p>{f.body}</p>
+                  {f.k === 'watermark' && <WatermarkViz />}
+                </div>
+                {PROT_SHOTS[f.k] && <div className="b-shot"><Shot code={PROT_SHOTS[f.k]} alt={f.title} /></div>}
               </SpotlightCard>
             </AnimatedContent>
           ))}
@@ -194,38 +236,29 @@ export function Protection() {
     </section>
   );
 }
-function PlayersViz() {
-  return (
-    <div className="pviz">
-      {['الأساسي', 'البديل', 'النت الضعيف'].map((p, i) => (
-        <span key={p} className={`pv pv${i}`}><i />{p}</span>
-      ))}
-    </div>
-  );
-}
 function WatermarkViz() {
-  return (
-    <div className="wviz"><span className="wv-play"><Icon name="play" size={22} /></span><span className="wv-mark">عمر أشرف · S-55120</span></div>
-  );
+  return <div className="wviz"><span className="wv-play"><Icon name="play" size={22} /></span><span className="wv-mark">عمر أشرف · S-55120</span></div>;
 }
 
-/* ---------------- OFFLINE (padlock) ---------------- */
+/* ---------------- OFFLINE (padlock + real download screens) ---------------- */
 export function Offline() {
   const ref = useRef(null);
   const progress = useScrollProgress(ref, { start: 'top 80%', end: 'center center' });
   return (
     <section id="offline" ref={ref} className="section dark offline">
       <div className="wrap off-grid">
-        <View3D className="off-3d" camera={{ position: [0, 0.6, 6], fov: 38 }}><LockScene progress={progress} /></View3D>
+        <div className="off-visual">
+          <Lazy3D name="lock" className="off-3d" progress={progress} camera={{ position: [0, 0.6, 6], fov: 38 }} />
+          <Shot code="ST6.15" className="off-shot a" alt="تحميل المحاضرة" />
+          <Shot code="ST7.6" className="off-shot b" alt="تشغيل من غير نت" />
+        </div>
         <div>
           <span className="kicker"><span className="dot" />أوفلاين مشفّر</span>
           <h2 className="h2">{OFFLINE.title}<br /><GradientText colors={['#7FA6FF', '#F2A93B', '#7FA6FF']} animationSpeed={6} className="grad">{OFFLINE.title2}</GradientText></h2>
           <div className="cipher" dir="ltr"><Icon name="lock" size={18} /><DecryptedText text={OFFLINE.cipher} animateOn="view" sequential revealDirection="start" speed={45} characters="01ABCDEF#$%&" encryptedClassName="enc" /></div>
           <div className="off-points">
             {OFFLINE.points.map((p, i) => (
-              <AnimatedContent key={p.t} distance={30} delay={i * 0.1} direction="horizontal" reverse>
-                <div className="op"><span className="op-n">{i + 1}</span><div><h4>{p.t}</h4><p>{p.b}</p></div></div>
-              </AnimatedContent>
+              <div key={p.t} className="op"><span className="op-n">{i + 1}</span><div><h4>{p.t}</h4><p>{p.b}</p></div></div>
             ))}
           </div>
         </div>
@@ -234,15 +267,15 @@ export function Offline() {
   );
 }
 
-/* ---------------- TOOLKIT (stacking cards) ---------------- */
+/* ---------------- TOOLKIT (stacking cards with real screens) ---------------- */
+const TOOL_SHOTS = ['ST4.1', 'L45.3', 'ST11.4', 'ST9.3', 'ST12.1', 'ST13.1', 'ST10.7', 'L47.3'];
 export function Toolkit() {
   const ref = useRef(null);
   useGSAP(() => {
     const cards = gsap.utils.toArray('.stack-card');
     cards.forEach((card, i) => {
       if (i === cards.length - 1) return;
-      gsap.to(card, { scale: 0.94 + i * 0.006, ease: 'none',
-        scrollTrigger: { trigger: cards[i + 1], start: 'top 60%', end: 'top 20%', scrub: true } });
+      gsap.to(card, { scale: 0.94 + i * 0.006, ease: 'none', scrollTrigger: { trigger: cards[i + 1], start: 'top 60%', end: 'top 20%', scrub: true } });
     });
   }, { scope: ref });
   return (
@@ -251,10 +284,9 @@ export function Toolkit() {
         <Heading kicker="أدوات المحاضر" title="كل اللي بتعمله في السنتر — من موبايلك" sub="الكورس، المجموعات، الطلاب، الفلوس، الامتحانات والتواصل. والسكرتير يقدر يعمل نفس الحاجات بصلاحياتك." />
         <div className="stack">
           {TOOLKIT.map((t, i) => (
-            <article key={t.title} className="stack-card" style={{ top: `${110 + i * 14}px` }}>
-              <span className="sc-n">{String(i + 1).padStart(2, '0')}</span>
-              <div className="sc-body"><h3>{t.title}</h3><p>{t.body}</p><div className="sc-chips">{t.chips.map((c) => <span key={c}>{c}</span>)}</div></div>
-              <span className="sc-art"><Icon name={['board', 'wallet', 'userplus', 'exam', 'chart', 'bell', 'live', 'layers'][i]} size={54} /></span>
+            <article key={t.title} className="stack-card" style={{ top: `${100 + i * 12}px` }}>
+              <div className="sc-body"><span className="sc-n">{String(i + 1).padStart(2, '0')}</span><h3>{t.title}</h3><p>{t.body}</p><div className="sc-chips">{t.chips.map((c) => <span key={c}>{c}</span>)}</div></div>
+              <div className="sc-art"><Shot code={TOOL_SHOTS[i]} alt={t.title} /></div>
             </article>
           ))}
         </div>
@@ -270,7 +302,7 @@ export function Facts() {
       <div className="wrap facts-grid">
         {FACTS.map((f) => (
           <div key={f.label} className="fact">
-            <span className="fact-n" dir="ltr"><CountUp to={f.to} duration={2.2} />{f.suffix}</span>
+            <span className="fact-n" dir="ltr"><CountUp to={f.to} duration={2} />{f.suffix}</span>
             <span className="fact-l">{f.label}</span>
           </div>
         ))}
@@ -279,9 +311,8 @@ export function Facts() {
   );
 }
 
-/* ---------------- BILLING ---------------- */
+/* ---------------- BILLING (real invoice screens) ---------------- */
 export function Billing() {
-  const total = BILLING.rows.reduce((a, r) => a + r.s, 0);
   return (
     <section className="section light">
       <div className="wrap bill-grid">
@@ -295,16 +326,10 @@ export function Billing() {
             <li><Icon name="check" size={16} />إشعار قبل الميعاد، ومهلة قبل أي قفل</li>
           </ul>
         </div>
-        <AnimatedContent distance={80} rotate={-4} duration={1}>
-          <div className="invoice">
-            <div className="inv-head"><div><span className="inv-k">فاتورة أكتوبر</span><b dir="ltr">INV-2026-10</b></div><span className="inv-st"><ShinyText text="تحويل للمراجعة" color="#9A5B00" shineColor="#FFD27A" speed={2.5} /></span></div>
-            {BILLING.rows.map((r) => (
-              <div key={r.c} className="inv-row"><span dir="ltr">{r.c}</span><span className="inv-s">{r.s} طالب</span></div>
-            ))}
-            <div className="inv-row muted"><span>12 طالب مطرود</span><span>مش محسوبين</span></div>
-            <div className="inv-total"><span>طلاب محسوبين</span><b dir="ltr"><CountUp to={total} duration={1.6} /></b></div>
-          </div>
-        </AnimatedContent>
+        <div className="bill-shots">
+          <AnimatedContent distance={60} rotate={-3} duration={0.9}><Shot code="L45.1" className="bs a" alt="الفواتير" /></AnimatedContent>
+          <AnimatedContent distance={90} rotate={4} duration={0.9} delay={0.12}><Shot code="L45.3" className="bs b" alt="طلاب الكورس في الفاتورة" /></AnimatedContent>
+        </div>
       </div>
     </section>
   );
@@ -334,9 +359,10 @@ export function Faq() {
 export function Finale() {
   return (
     <section className="finale dark">
-      <View3D className="fin-3d" camera={{ position: [0, 0.3, 6.5], fov: 38 }}><FinaleScene /></View3D>
+      <Lazy3D name="finale" className="fin-3d" camera={{ position: [0, 0.3, 6.5], fov: 38 }} />
       <div className="wrap fin-copy">
-        <h2 className="h2 center"><SplitText text="جاهز تنقل كورساتك لدرسلي؟" tag="span" splitType="words" delay={80} textAlign="center" /></h2>
+        <img className="fin-icon" src={brand('darsly-icon-white')} alt="" width="64" height="62" />
+        <h2 className="h2 center"><SplitText text="جاهز تنقل كورساتك لدرسلي؟" tag="span" splitType="words" delay={70} textAlign="center" /></h2>
         <p className="lead center light-t">ابدأ كمحاضر، ضيف السكرتير، وطلابك ينزّلوا التطبيق ويطلبوا ينضموا — كله في نفس اليوم.</p>
         <div className="hero-ctas center">
           <Magnet padding={70} magnetStrength={3}><a className="btn btn-primary big" href="#top" onClick={go('top')}>ابدأ كمحاضر<Icon name="arrow" size={18} /></a></Magnet>
@@ -360,12 +386,11 @@ export function Footer() {
   );
 }
 
-/* ---------------- shared heading ---------------- */
 function Heading({ kicker, title, sub, dark }) {
   return (
     <div className={`heading ${dark ? 'on-dark' : ''}`}>
       <span className={`kicker ${dark ? '' : 'dark-k'}`}><span className="dot" />{kicker}</span>
-      <h2 className="h2"><SplitText text={title} tag="span" splitType="words" delay={60} duration={0.9} textAlign="right" /></h2>
+      <h2 className="h2"><SplitText text={title} tag="span" splitType="words" delay={50} duration={0.8} textAlign="right" /></h2>
       {sub && <p className="lead">{sub}</p>}
     </div>
   );

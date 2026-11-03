@@ -19,8 +19,15 @@ STACK (mandatory)
 - Motion: GSAP 3 + ScrollTrigger (+ @gsap/react useGSAP) for scroll storytelling; Lenis for smooth scroll,
   wired to gsap.ticker and ScrollTrigger.update.
 - React Bits components (copy the JS+CSS sources into src/components/reactbits and keep their MIT + Commons Clause
-  licence file): Aurora, SplitText, BlurText, RotatingText, ShinyText, DecryptedText, ScrollReveal, GradientText,
-  SpotlightCard, Magnet, ClickSpark, StarBorder, CountUp, AnimatedContent, LogoLoop.
+  licence file): SplitText, BlurText, RotatingText, DecryptedText, ScrollReveal, GradientText, SpotlightCard, Magnet,
+  StarBorder, CountUp, AnimatedContent, LogoLoop.
+
+BRAND & REAL SCREENS (mandatory)
+- Use the official logo files only: public/brand/darsly-logo.svg (+ darsly-logo-white.svg for dark backgrounds, made by
+  turning #131153 into #FFFFFF) and darsly-icon.svg (favicon). Never redraw the logo.
+- Every phone on the page shows a REAL app screen: PNG exports of the design-canvas frames (390×844 @2x), converted to
+  600px-wide WebP in public/screens/{STATE_CODE}.webp (e.g. ST6.1, L47.2, A2.1). No hand-drawn fake screens.
+  HTML phones = <Shot code>: a CSS bezel around a lazy <img>; 3D phones = the same WebP as a static texture.
 
 LANGUAGE & DIRECTION
 - Egyptian Arabic, <html lang="ar" dir="rtl">. Latin names (Chapter 1 · Part 2, AES-256-GCM, INV-2026-10) stay LTR.
@@ -35,7 +42,12 @@ DESIGN SYSTEM «Ink & Cobalt» (same as the apps)
 - Fonts (Google Fonts): Alexandria (headings, numbers), IBM Plex Sans Arabic (body), IBM Plex Mono (codes).
 - Radii: cards 24–30, buttons 16–18, chips 999. Dark sections = ink background; light sections = paper.
 
-PERFORMANCE & A11Y
+PERFORMANCE & A11Y (the page must stay at 60 fps on a mid-range laptop)
+- No full-screen WebGL backgrounds: the hero glow is CSS radial gradients animated with transform only.
+- three.js / R3F / drei are code-split: React.lazy(() => import('./three/Scene3D.jsx')) so text paints first.
+- MeshStandardMaterial only (no physical/clearcoat), low segment counts, ContactShadows frames={1}, Environment
+  resolution 128 frames={1}, no per-frame texture uploads, AdaptiveDpr, dpr [1, 1.5].
+- Lenis with lerp 0.14 (not a long duration), native touch scrolling.
 - Each <Canvas> sits in a wrapper that uses an IntersectionObserver to switch frameloop between
   'always' and 'never', so only canvases on screen render. dpr [1, 1.75].
 - prefers-reduced-motion: no Lenis, no CSS animations.
@@ -53,26 +65,28 @@ Details are in P1–P8. Do not invent numbers about users or revenue; only produ
 
 ```
 HERO (dark, full viewport):
-- Background: React Bits <Aurora colorStops={['#1F4FD8','#7FA6FF','#13234A']} amplitude 1.1 speed 0.6/> with a radial
-  ink vignette and a 6% SVG grain overlay.
+- Background: three blurred radial-gradient glows (cobalt, cobalt-hi, faint amber) drifting with CSS transform, and a
+  masked 64px grid; no WebGL.
 - Right column (RTL first): kicker pill «منصة التدريس الأونلاين في مصر»; H1 in two lines with SplitText (words):
   «درّس أونلاين،» / «وسيب الباقي على درسلي» (second line has a white→sky→amber gradient text);
   row «تطبيق واحد» + RotatingText pill [للمحاضر, للسكرتير, للطالب]; BlurText paragraph; two CTAs wrapped in Magnet
   («ابدأ كمحاضر» primary cobalt, «حمّل تطبيق الطالب» glass); badges row (محمي باسم الطالب · تحميل مشفّر · دارك مود).
 - Left column: <Canvas> with HeroScene:
-  * PHONE MODEL: drei RoundedBox aluminium body (#1B2440, metalness .85) + black glass + a plane with a CanvasTexture.
-    The canvas (780×1688) draws the real Darsly lecture-player screen in RTL with ctx.direction='rtl':
-    header «Chapter 1 · Part 2», navy video with play button, a MOVING WATERMARK «عمر أشرف · S-55120»
-    (position animated with sin/cos), progress bar, chips «تلقائي · 720p», «محمي», «المشغّل الأساسي»,
-    chapters card (4 rows with times in IBM Plex Mono), cobalt button «تحميل · بيتحفظ مشفّر».
-    Wait for document.fonts.load(...) before the first draw; redraw at 20 fps.
-  * Orbiting product icons inside drei <Float>: PlayBadge, Bell, Shield-with-check, Graduation Cap (P8 models).
-  * drei <Sparkles> + <ContactShadows>.
+  * THREE PHONE MODELS (drei RoundedBox body + glass + screen plane) with real screens as textures:
+    centre ST6.1 (player), right ST1.4 (home), left ST7.3 (downloads), each in a gentle <Float>.
+  * Two floating product icons (PlayBadge, Shield) + baked ContactShadows.
   * The rig follows the pointer (damped) and, driven by a ScrollTrigger progress ref, rotates and lifts as the
     hero scrolls away. The copy column parallaxes up and fades.
 - Nav: fixed, transparent → blurred ink glass after 40px. Logo = cobalt tile with cap icon + "Darsly".
   Links scroll with lenis.scrollTo(offset -70). CTA = React Bits StarBorder.
-- Wrap the whole app in React Bits ClickSpark (colors sky / amber / white).
+```
+
+## P1b · Screens gallery
+
+```
+SCREENS (dark): heading «ده شكل درسلي بجد». Tabs: تطبيق الطالب / المحاضر والسكرتير / الأدمن, plus prev/next arrows.
+A horizontal scroll-snap rail of <Shot> phones (250px) with the state code (mono, sky) and the screen name under each;
+staggered rise-in, hover lifts and tilts the phone. Lists in src/data/screens.js (GALLERY).
 ```
 
 ---
@@ -102,8 +116,9 @@ streaming link.
 - A thin cobalt TubeGeometry along the curve + an instancedMesh of 70 glowing spheres flowing along it (getPointAt).
 - Active station = round(progress*3): scales 0.75→1.2 and spins faster; the camera x is damped from +1.6 to −1.6
   following progress. Scale the whole scene by min(1, viewport.width/7.5) on small screens.
-Under the canvas: 4 step cards (01–04 from JOURNEY) — active card highlighted (cobalt glass, lifted), done cards
-dimmed less; a progress bar under them (scaleX from the right).
+The pipeline canvas is a translucent background band at the bottom of the pinned section. Foreground: 2 columns —
+heading + 4 vertical step cards (active = cobalt glass, shifted), and a phone that cross-fades between the real
+screens of each step: L47.1 (add link) → L47.2 (processing) → L47.4 (published + push) → ST6.1 (student player).
 ```
 
 ---
@@ -116,8 +131,8 @@ scrubbed) explaining that the student only sees Darsly's player (no YouTube/Driv
 Bento grid 4 columns (2 on tablet, 1 on phone) of SpotlightCards from PROTECTION; items with big:true span 2:
 - «علامة مائية متحركة» card contains a mini navy video with a play button and the name watermark jumping
   between 3 positions (CSS steps animation).
-- «أكتر من مشغّل» card contains 3 player chips (الأساسي / البديل / النت الضعيف): on a 6 s loop the primary turns red
-  and struck through while the alternate turns green — the automatic fallback.
+- Cards with a real screen peeking from the bottom (lifts on hover): أكتر من مشغّل → ST6.17, منع تصوير الشاشة → ST6.11,
+  الجودة → ST6.3, سماعة إجباري → ST6.10, فصول وأسئلة → ST6.1, شروط فتح المحاضرة → ST5.1.
 Others: عدد مشاهدات، منع تصوير الشاشة، سماعة إجباري، الجودة في إيد الطالب، فصول وأسئلة جوه الفيديو، شروط فتح المحاضرة.
 ```
 
@@ -133,6 +148,7 @@ OFFLINE (dark, 2 columns): left = LockScene canvas, right = copy.
   smoothstep 0.15–0.55, damped).
 - 90 instanced "encrypted bits" (small glowing cubes) orbit the lock at random radii/heights; a thin glowing ring.
 - Pointer-follow rotation, Float, ContactShadows.
+Two real screens overlap the canvas, slightly rotated: ST6.15 (download with quality) and ST7.6 (offline playback).
 Copy: kicker «أوفلاين مشفّر», H2 «نزّل وتفرّج من غير نت —» + GradientText line «والملف ميتفتحش برّه درسلي»,
 a mono pill with DecryptedText "AES-256-GCM" (animateOn view, sequential, chars 01ABCDEF#$%&),
 4 numbered points (OFFLINE.points) revealed with AnimatedContent (horizontal).
@@ -147,7 +163,8 @@ playing, never written decrypted; teacher sets offline days (or open) and max do
 ```
 TOOLKIT (light): heading «كل اللي بتعمله في السنتر — من موبايلك».
 8 sticky cards (position: sticky, top 110px + i*14px) from TOOLKIT, colour cycle white / ink / cobalt / amber-tint.
-Each card: big mono index 01–08, title, body, 3 chips, a large icon tile (hidden on mobile).
+Each card (340px tall, overflow hidden): mono index, title, body, 3 chips, and a real screen (230px) peeking from the
+bottom: ST4.1, L45.3, ST11.4, ST9.3, ST12.1, ST13.1, ST10.7, L47.3.
 GSAP: while the next card scrolls from 'top 60%' to 'top 20%', the previous card scales to 0.94 (+0.006*i). Never
 fade or blur the covered card — the cards are opaque and simply stack.
 ```
@@ -162,9 +179,7 @@ FACTS (dark band): 4 CountUp numbers in Alexandria 900 with a white→sky gradie
 
 BILLING (light, 2 columns): «بتدفع على طلابك الفعليين بس» + rules list (active & suspended billed, expelled listed not
 billed, a student in several groups of one course counted once, reminder + grace before any lock).
-Visual: an invoice card rotated −2° (AnimatedContent rotate −4 → 0): header «فاتورة أكتوبر» INV-2026-10, a status pill
-with ShinyText «تحويل للمراجعة» (pill background on a wrapper span, not on ShinyText itself), 3 course rows with
-student counts, a muted row «12 طالب مطرود · مش محسوبين», total box with CountUp.
+Visual: the real teacher invoice screens L45.1 and L45.3 as two overlapping, slightly rotated phones.
 
 FAQ (light): accordion of 6 questions from FAQ; one open at a time; animated with grid-template-rows 0fr→1fr;
 the plus icon turns into a minus on a cobalt tile.
@@ -177,7 +192,7 @@ the plus icon turns into a minus on a cobalt tile.
 ```
 FINALE (dark): FinaleScene canvas — a liquid cobalt orb (icosahedron + drei MeshDistortMaterial distort .35),
 the Graduation Cap floating on top, PlayBadge and Shield floating on the sides, white Sparkles.
-Under it: SplitText H2 «جاهز تنقل كورساتك لدرسلي؟», lead line, Magnet CTA «ابدأ كمحاضر» + Google Play and
+Under it: the white Darsly icon, SplitText H2 «جاهز تنقل كورساتك لدرسلي؟», lead line, Magnet CTA «ابدأ كمحاضر» + Google Play and
 App Store buttons. Footer: logo, «درسلي © 2026», section links.
 
 3D MODEL LIBRARY (src/three/models.jsx), all procedural, MeshPhysicalMaterial clearcoat ~1, roughness ~.25:
@@ -196,8 +211,7 @@ App Store buttons. Footer: logo, «درسلي © 2026», section links.
 ## P9 · Extras you can ask for next
 
 ```
-- Add a "screens" gallery section: a horizontal GSAP-pinned scroll of 6 phone mock-ups (student player, downloads,
-  exams, teacher L47 processing, invoices, admin dashboard) rendered with the same CanvasTexture phone.
+- Export more screens (teacher L1–L46 boards need the canvas runtime to render) and add them to GALLERY.teacher.
 - Add an English version (/en) with dir="ltr" by reading the copy from content.en.js.
 - Replace the store buttons with real links when the apps are published.
 - Add Open Graph image: render the hero 3D scene to a PNG at build time.

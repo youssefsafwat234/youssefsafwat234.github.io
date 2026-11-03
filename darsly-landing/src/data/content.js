@@ -2,10 +2,10 @@
 
 export const NAV = [
   { id: 'audience', label: 'لمين؟' },
+  { id: 'screens', label: 'شاشات التطبيق' },
   { id: 'journey', label: 'رحلة المحاضرة' },
   { id: 'protection', label: 'حماية الفيديو' },
   { id: 'offline', label: 'أوفلاين مشفّر' },
-  { id: 'toolkit', label: 'أدوات المحاضر' },
   { id: 'faq', label: 'أسئلة' }
 ];
 
